@@ -35,14 +35,6 @@ public class PetriNet<T> {
         return ans;
     }
 
-    private void addInput(T key, Transition<T> transition) {
-        Place.make(key).addInput(transition.general());
-    }
-
-    private void addOutput(T key, Transition<T> transition) {
-        Place.make(key).addOutput(transition.general());
-    }
-
     private TokenCondition<T> makeCondition(Tokens tokens, boolean fair) {
         if (fair)
             return new FairCondition<>(tokens);

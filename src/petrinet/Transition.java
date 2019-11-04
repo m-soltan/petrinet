@@ -9,20 +9,28 @@ import java.util.Set;
 
 public class Transition<T> {
     private static class Data {
-        public final Map<Place, Integer> input, output;
-        public final Set<Place> inhibitor, reset;
+        final Map<Place, Integer> input, output;
+        final Set<Place> inhibitor, reset;
 
-        public Data(
+        Data(
                 Map<Place,
                 Integer> input,
                 Collection<Place> reset,
                 Collection<Place> inhibitor,
                 Map<Place, Integer> output
         ) {
-            this.input = Collections.unmodifiableMap(Map.copyOf(input));
-            this.output = Collections.unmodifiableMap(Map.copyOf(output));
-            this.inhibitor = Collections.unmodifiableSet(Set.copyOf(inhibitor));
-            this.reset = Collections.unmodifiableSet(Set.copyOf(reset));
+            this.input = makeView(input);
+            this.inhibitor = makeView(inhibitor);
+            this.reset = makeView(reset);
+            this.output = makeView(output);
+        }
+
+        private Map<Place, Integer> makeView(Map<Place, Integer> map) {
+            return Collections.unmodifiableMap(Map.copyOf(map));
+        }
+
+        private Set<Place> makeView(Collection<Place> collection) {
+            return Collections.unmodifiableSet(Set.copyOf(collection));
         }
     }
     private final Data data;
@@ -30,17 +38,7 @@ public class Transition<T> {
     public Transition(Map<T, Integer> input, Collection<T> reset, Collection<T> inhibitor, Map<T, Integer> output) {
         assert(reset.isEmpty()); // todo: reset is not implemented
         assert(inhibitor.isEmpty()); // todo: inhibitor is not implemented
-
-        throw new NullPointerException(); // todo
-    }
-
-    public boolean isReady(Map<Place, Integer> values) {
-        for (Place i: data.input.keySet()) {
-            Integer value = values.getOrDefault(i, 0);
-            if (value < data.input.get(i))
-                return false;
-        }
-        return true;
+        this.data = new Data(asPlaces(input), asPlaces(reset), asPlaces(inhibitor), asPlaces(output));
     }
 
     public Map<Place, Integer> getInput() {
@@ -51,8 +49,18 @@ public class Transition<T> {
         return data.output;
     }
 
-    Transition<Object> general() {
-        return new Transition<>(this.data);
+    private Map<Place, Integer> asPlaces(Map<T, Integer> map) {
+        HashMap<Place, Integer> ans = new HashMap<>();
+        for (T i: map.keySet())
+            ans.put(Place.make(i), map.get(i));
+        return ans;
+    }
+
+    private Set<Place> asPlaces(Collection<T> collection) {
+        HashSet<Place> ans = new HashSet<>();
+        for (T i: collection)
+            ans.add(Place.make(i));
+        return ans;
     }
 
     private Transition(Data data) {

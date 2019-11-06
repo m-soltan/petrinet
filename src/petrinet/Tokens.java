@@ -29,7 +29,7 @@ public class Tokens {
         for (Place i: map.keySet()) {
             int updatedCount = map.get(i) + marking.getOrDefault(i, 0);
             marking.remove(i);
-            marking.replace(i, updatedCount);
+            marking.put(i, updatedCount);
         }
     }
 

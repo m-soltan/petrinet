@@ -6,15 +6,19 @@ import java.util.Map;
 import java.util.Set;
 
 public class PetriNet<T> {
-    private final Tokens tokens;
+    private final Marking marking;
     private final TokenCondition<T> strategy;
 
     public PetriNet(Map<T, Integer> initial, boolean fair) {
         HashMap<Place, Integer> map = new HashMap<>();
         for (T i: initial.keySet())
             map.put(Place.make(i), initial.get(i));
-        tokens = new Tokens(map);
-        strategy = makeCondition(tokens, fair);
+        marking = new Marking(map);
+        strategy = makeCondition(marking, fair);
+    }
+
+    public int getCount(Place place) {
+        return marking.getCount(place);
     }
 
     public Set<Map<T, Integer>> reachable(Collection<Transition<T>> transitions) {
@@ -27,18 +31,16 @@ public class PetriNet<T> {
             throw new IllegalArgumentException("empty set");
         }
         Transition<T> ans = strategy.resolve(transitions);
-        tokens.payFor(ans.getInput());
+        marking.payFor(ans.getInput());
         output = ans.getOutput();
-        tokens.addTokens(output);
+        marking.addTokens(output);
         strategy.retry(output);
-        tokens.mutex.release();
+        marking.mutex.release();
         return ans;
     }
 
-    private TokenCondition<T> makeCondition(Tokens tokens, boolean fair) {
-        if (fair)
-            return new FairCondition<>(tokens);
-        else
-            return new UnfairCondition<>(tokens);
+    // uses the fair subclass regardless of boolean parameter
+    private TokenCondition<T> makeCondition(Marking marking, boolean fair) {
+        return new FairCondition<>(marking);
     }
 }

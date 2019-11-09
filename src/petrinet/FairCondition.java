@@ -20,7 +20,7 @@ class FairCondition<T> extends TokenCondition<T> {
     }
     private P last = new P();
 
-    FairCondition(Tokens marking) {
+    FairCondition(Marking marking) {
         super(marking);
     }
 
@@ -31,7 +31,13 @@ class FairCondition<T> extends TokenCondition<T> {
             marking.mutex.acquire();
             // try to pass
             for (Transition<T> i: transitions) {
-                if (marking.canPass(i.getInput())) {
+                Map<Place, Integer> input = i.getInput();
+                boolean inputFull = true;
+                for (Place j: i.getInput().keySet()) {
+                    if (marking.getCount(j) < input.get(j))
+                        inputFull = false;
+                }
+                if (inputFull) {
                     return i;
                 }
             }

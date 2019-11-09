@@ -32,7 +32,7 @@ public class UnfairCondition<T> extends TokenCondition<T> {
         }
     }
 
-    public UnfairCondition(Tokens marking) {
+    public UnfairCondition(Marking marking) {
         super(marking);
     }
 

@@ -4,20 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
-public class Tokens {
+public class Marking {
     final Semaphore mutex;
     final HashMap<Place, Integer> marking;
 
-    Tokens(Map<Place, Integer> marking) {
+    Marking(Map<Place, Integer> marking) {
         this.marking = new HashMap<>(marking);
         this.mutex = new Semaphore(1, false);
-    }
-
-    boolean canPass(Map<Place, Integer> requirements) {
-        for (Place i: requirements.keySet())
-            if (getCount(i) < requirements.get(i))
-                return false;
-        return true;
     }
 
     int getCount(Place place) {

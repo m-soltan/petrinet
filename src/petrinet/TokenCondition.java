@@ -2,12 +2,11 @@ package petrinet;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 
 public abstract class TokenCondition<T> {
-    final Tokens marking;
+    final Marking marking;
 
-    TokenCondition(Tokens marking) {
+    TokenCondition(Marking marking) {
         this.marking = marking;
     }
 

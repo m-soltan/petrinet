@@ -33,6 +33,35 @@ public class Transition<T> {
             return Collections.unmodifiableSet(Set.copyOf(collection));
         }
     }
+
+    private static class MapWriter<K, V> {
+        private final Map<K, V> map;
+
+        private MapWriter(Map<K, V> map) {
+            this.map = Map.copyOf(map);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder ans = new StringBuilder();
+            ans.append("{");
+            boolean first = true;
+            for (K i: map.keySet()) {
+                if (first) {
+                    first = false;
+                } else {
+                    ans.append(",  ");
+                }
+                ans.append("(")
+                        .append(i.toString())
+                        .append(", ")
+                        .append(map.get(i))
+                        .append(")");
+            }
+            ans.append("}");
+            return ans.toString();
+        }
+    }
     private final Data data;
 
     public Transition(Map<T, Integer> input, Collection<T> reset, Collection<T> inhibitor, Map<T, Integer> output) {
@@ -49,6 +78,10 @@ public class Transition<T> {
         return data.output;
     }
 
+    private void writeMap(Map m, StringBuilder s) {
+
+    }
+
     private Map<Place, Integer> asPlaces(Map<T, Integer> map) {
         HashMap<Place, Integer> ans = new HashMap<>();
         for (T i: map.keySet())
@@ -61,6 +94,13 @@ public class Transition<T> {
         for (T i: collection)
             ans.add(Place.make(i));
         return ans;
+    }
+
+    @Override
+    public String toString() {
+        return "Transition" +
+                "\ninput: " + new MapWriter<>(data.input) +
+                "\noutput: " + new MapWriter<>(data.output);
     }
 
     private Transition(Data data) {

@@ -70,6 +70,11 @@ public class PetriNet<T> {
         return ans;
     }
 
+    // todo: remove
+    public String toString() {
+        return marking.toString();
+    }
+
     // uses the fair subclass regardless of boolean parameter
     private TokenCondition<T> makeCondition(MutableMarking marking, boolean fair) {
         return new FairCondition<>(marking);

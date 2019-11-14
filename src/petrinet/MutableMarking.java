@@ -12,6 +12,11 @@ class MutableMarking extends Marking {
     public final Condition ready = l.newCondition();
     final HashMap<Place, Integer> map;
 
+    // todo: remove
+    public String toString() {
+        return map.toString();
+    }
+
     MutableMarking(Map<Place, Integer> map) {
         this.map = new HashMap<>(map);
     }

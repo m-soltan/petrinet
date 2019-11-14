@@ -4,9 +4,9 @@ import java.util.Collection;
 import java.util.Map;
 
 public abstract class TokenCondition<T> {
-    final Marking marking;
+    final MutableMarking marking;
 
-    TokenCondition(Marking marking) {
+    TokenCondition(MutableMarking marking) {
         this.marking = marking;
     }
 

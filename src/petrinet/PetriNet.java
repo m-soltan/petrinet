@@ -4,7 +4,7 @@ import java.util.*;
 
 public class PetriNet<T> {
     private final Map<Place, T> revMap;
-    private final Marking marking;
+    private final MutableMarking marking;
     private final TokenCondition<T> strategy;
 
     public PetriNet(Map<T, Integer> initial, boolean fair) {
@@ -16,32 +16,17 @@ public class PetriNet<T> {
             revMap.put(place, i);
         }
         this.revMap = revMap;
-        marking = new Marking(map);
+        marking = new MutableMarking(map);
         strategy = makeCondition(marking, fair);
     }
 
     // todo: remove
-    int getCount(Place place) {
-        return marking.getCount(place);
+    public int getCount(T value) {
+        return marking.getCount(Place.make(value));
     }
 
     public Set<Map<T, Integer>> reachable(Collection<Transition<T>> transitions) {
-        ArrayDeque<Marking> q = new ArrayDeque<>();
-        HashSet<Map<T, Integer>> ans = new HashSet<>();
-        q.add(marking);
-        while (!q.isEmpty()) {
-            Marking i = q.pollFirst();
-            for (Transition j: transitions) {
-                if (j.isUnblocked(i) && j.isInputReady(i))
-                    q.addLast(j.step(i));
-            }
-            HashMap<T, Integer> element = new HashMap<>();
-            for (Place j: i.getKeys()) {
-                element.put(revMap.get(j), i.getCount(j));
-            }
-            ans.add(element);
-        }
-        return ans;
+        return boundedReachable(transitions, Integer.MAX_VALUE);
     }
 
     public Transition<T> fire(Collection<Transition<T>> transitions) throws InterruptedException {
@@ -54,12 +39,37 @@ public class PetriNet<T> {
         marking.addTokens(ans.output);
         // inform the strategy about added tokens
         strategy.retry(ans.output);
-        marking.mutex.release();
+        marking.l.unlock();
+        return ans;
+    }
+
+    public Set<Map<T, Integer>> boundedReachable(Collection<Transition<T>> transitions, int limit) {
+        ArrayDeque<ImmutableMarking> q = new ArrayDeque<>();
+        HashSet<Map<T, Integer>> ans = new HashSet<>();
+        marking.l.lock();
+        Map<Place, T> reverse = Map.copyOf(revMap);
+        q.add(new ImmutableMarking(marking.map));
+        marking.l.unlock();
+        for (int i = 0; i < limit; ++i) {
+            if (q.isEmpty())
+                break;
+            ImmutableMarking marking = q.pollFirst();
+            for (Transition j: transitions) {
+                if (j.isUnblocked(marking) && j.isInputReady(marking))
+                    q.addLast(j.step(marking));
+            }
+            HashMap<T, Integer> element = new HashMap<>();
+            for (Place j: marking.getKeys()) {
+                assert(reverse.containsKey(j));
+                element.put(reverse.get(j), marking.getCount(j));
+            }
+            ans.add(element);
+        }
         return ans;
     }
 
     // uses the fair subclass regardless of boolean parameter
-    private TokenCondition<T> makeCondition(Marking marking, boolean fair) {
+    private TokenCondition<T> makeCondition(MutableMarking marking, boolean fair) {
         return new FairCondition<>(marking);
     }
 

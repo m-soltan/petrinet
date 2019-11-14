@@ -4,15 +4,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 class MutableMarking extends Marking {
+    public final ReentrantLock l = new ReentrantLock();
+    public final Condition ready = l.newCondition();
     final HashMap<Place, Integer> map;
-    final Semaphore mutex;
 
     MutableMarking(Map<Place, Integer> map) {
         this.map = new HashMap<>(map);
-        this.mutex = new Semaphore(1, false);
     }
 
     MutableMarking(Marking marking) {
@@ -21,11 +22,9 @@ class MutableMarking extends Marking {
             map.put(i, marking.getCount(i));
         }
         this.map = map;
-        this.mutex = new Semaphore(1, false);
     }
 
     void addTokens(Map<Place, Integer> map) {
-        assert(hasMutex());
         for (Place i: map.keySet()) {
             int updatedCount = map.get(i) + this.map.getOrDefault(i, 0);
             this.map.remove(i);
@@ -34,7 +33,6 @@ class MutableMarking extends Marking {
     }
 
     void payFor(Map<Place, Integer> map) {
-        assert(hasMutex());
         for (Place i: map.keySet()) {
             int held = this.map.get(i);
             int needed = map.get(i);
@@ -49,13 +47,8 @@ class MutableMarking extends Marking {
     }
 
     void reset(Collection<Place> collection) {
-        assert(hasMutex());
         for (Place i: collection)
             map.remove(i);
-    }
-
-    private boolean hasMutex() {
-        return mutex.availablePermits() == 0;
     }
 
     @Override

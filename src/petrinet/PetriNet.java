@@ -47,17 +47,19 @@ public class PetriNet<T> {
         ArrayDeque<ImmutableMarking> q = new ArrayDeque<>();
         HashSet<Map<T, Integer>> ans = new HashSet<>();
         marking.l.lock();
-        Map<Place, T> reverse = Map.copyOf(revMap);
+        HashMap<Place, T> reverse = new HashMap<>(revMap);
         q.add(new ImmutableMarking(marking.map));
         marking.l.unlock();
+        for (Transition<T> i: transitions)
+            reverse.putAll(i.reverse);
+
         for (int i = 0; i < limit; ++i) {
             if (q.isEmpty())
                 break;
             ImmutableMarking marking = q.pollFirst();
-            for (Transition j: transitions) {
+            for (Transition j: transitions)
                 if (j.isUnblocked(marking) && j.isInputReady(marking))
                     q.addLast(j.step(marking));
-            }
             HashMap<T, Integer> element = new HashMap<>();
             for (Place j: marking.getKeys()) {
                 assert(reverse.containsKey(j));
@@ -72,5 +74,4 @@ public class PetriNet<T> {
     private TokenCondition<T> makeCondition(MutableMarking marking, boolean fair) {
         return new FairCondition<>(marking);
     }
-
 }

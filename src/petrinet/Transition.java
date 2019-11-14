@@ -32,6 +32,18 @@ public class Transition<T> {
         }
     }
 
+    private class Wrap {
+        final Collection<T> value;
+
+        Collection<T> getValue() {
+            return value;
+        }
+
+        Wrap(Collection<T> value) {
+            this.value = value;
+        }
+    }
+    final Map<Place, T> reverse;
     final Map<Place, Integer> input, output;
     final Set<Place> inhibitor, reset;
 
@@ -40,6 +52,19 @@ public class Transition<T> {
         this.inhibitor = asPlaces(inhibitor);
         this.reset = asPlaces(reset);
         this.output = asPlaces(output);
+        HashMap<Place, T> temp = new HashMap<>();
+        addReverse(temp, input.keySet());
+        addReverse(temp, reset);
+        addReverse(temp, inhibitor);
+        addReverse(temp, output.keySet());
+        reverse = Map.copyOf(temp);
+    }
+
+    @Override
+    public String toString() {
+        return "Transition" +
+                "\ninput: " + new MapWriter<>(input) +
+                "\noutput: " + new MapWriter<>(output);
     }
 
     boolean isUnblocked(Marking marking) {
@@ -50,7 +75,7 @@ public class Transition<T> {
         return true;
     }
 
-    public boolean isInputReady(Marking marking) {
+    boolean isInputReady(Marking marking) {
         for (Place i: input.keySet()) {
             if (marking.getCount(i) < input.get(i))
                 return false;
@@ -80,11 +105,9 @@ public class Transition<T> {
         return Collections.unmodifiableSet(Set.copyOf(ans));
     }
 
-    @Override
-    public String toString() {
-        return "Transition" +
-                "\ninput: " + new MapWriter<>(input) +
-                "\noutput: " + new MapWriter<>(output);
+    private void addReverse(Map<Place, T> result, Collection<T> set) {
+        for (T i: set) {
+            result.put(Place.make(i), i);
+        }
     }
-
 }

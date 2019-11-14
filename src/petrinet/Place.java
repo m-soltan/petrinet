@@ -7,8 +7,6 @@ class Place {
     private static final HashMap<Object, Place> all = new HashMap<>();
 
     private final Object key;
-    final ArrayList<Transition<Object>> input = new ArrayList<>();
-    final ArrayList<Transition<Object>> output = new ArrayList<>();
 
 
     static Place make(Object key) {

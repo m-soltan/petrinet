@@ -8,7 +8,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 class MutableMarking extends Marking {
-    public final ReentrantLock l = new ReentrantLock();
+    public final ReentrantLock l = new ReentrantLock(true);
     public final Condition ready = l.newCondition();
     final HashMap<Place, Integer> map;
 

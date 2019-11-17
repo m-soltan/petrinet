@@ -20,8 +20,7 @@ public class PetriNet<T> {
         strategy = makeCondition(marking, fair);
     }
 
-    // todo: remove
-    public int getCount(T value) {
+    public int get(T value) {
         return marking.getCount(Place.make(value));
     }
 

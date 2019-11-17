@@ -4,35 +4,39 @@ import petrinet.Transition;
 import java.util.*;
 
 public class Alternator {
-    private static final String[] places = new String[] {"AE", "AL", "BE", "BL", "CE", "CL"};
+    private static final int duration = 30;
+    private static final String middle = "prev";
+    private static class Debug {
+        static class Delayer {
+            static final int a = 500;
+            static final int b = 250;
+            static final int c = 100;
+        }
+    }
     private static class P implements Runnable {
         private final Collection<Transition<String>> enter, leave;
         private final String name;
 
-        private static Set<Transition<String>> starter = Set.of(
-                starterTransition(2),
-                starterTransition(1),
-                starterTransition(0)
-        );
 
-        private P(
-                Set<Transition<String>> enter,
-                Set<Transition<String>> leave,
-                String name
-        ) {
-            this.enter = new HashSet<>(enter);
-            this.enter.addAll(starter);
-            this.leave = leave;
+        private P(String name) {
+            this.enter = Set.of(enter(name));
+            this.leave = Set.of(leave(name));
             this.name = name;
-            System.out.println(enter);
-            System.out.println(leave);
-            System.out.println("\n");
         }
 
         @Override
         public void run() {
-             try {
-                 while (!Thread.currentThread().isInterrupted()) {
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    if (name.equals("A")) {
+                        Thread.sleep(Debug.Delayer.a);
+                    } else if (name.equals("B")) {
+                        Thread.sleep(Debug.Delayer.b);
+                    } else if (name.equals("C")) {
+                        Thread.sleep(Debug.Delayer.c);
+                    } else {
+                        assert(false);
+                    }
                     net.fire(enter);
                     System.out.println(name);
                     net.fire(leave);
@@ -40,7 +44,7 @@ public class Alternator {
             } catch (InterruptedException ignored) {}
         }
     }
-    private static PetriNet<String> net = new PetriNet<>(Collections.emptyMap(), true);
+    private static PetriNet<String> net = new PetriNet<>(Map.of("prev", 1), true);
 
     public static void main(String[] args) {
         String[] names = new String[] {"A", "B", "C"};
@@ -48,28 +52,32 @@ public class Alternator {
         Thread[] threads = new Thread[len];
 
         for (int i = 0; i < len; ++i) {
-            String prev = placeL((i + 2) % len);
-            String next = placeL((i + 1) % len);
-            Transition<String> leave = simple(placeE(i), placeL(i));
-            Transition<String> enterPrev = simple(prev, placeE(i));
-            Transition<String> enterNext = simple(next, placeE(i));
-            threads[i] = new Thread(new P(
-                    Set.of(enterPrev, enterNext),
-                    Set.of(leave), names[i]
-            ));
+            threads[i] = new Thread(new P(names[i]));
         }
 
         for (Thread i: threads)
             i.start();
 
         try {
-            Thread.sleep(30 * 1000);
+            Thread.sleep(1000 * duration);
         } catch (InterruptedException e) {
             System.err.println("main thread interrupted");
         } finally {
             for (Thread i: threads)
                 i.interrupt();
         }
+    }
+
+    private static Set<String> others(String name) {
+        String[] arr = new String[] {"A", "B", "C", "A", "B"};
+        int start = 0;
+        while (!arr[start].equals(name))
+            ++start;
+        return Set.of(block(arr[1 + start]), block(arr[2 + start]));
+    }
+
+    private static String block(String x) {
+        return "block" + x;
     }
 
     private static Transition<String> simple(String from, String to) {
@@ -81,20 +89,21 @@ public class Alternator {
         );
     }
 
-    private static String placeE(int x) {
-        return places[2 * x];
-    }
-
-    private static String placeL(int x) {
-        return places[2 * x + 1];
-    }
-
-    private static Transition<String> starterTransition(int x) {
+    private static Transition<String> enter(String name) {
         return new Transition<>(
-                Map.of(),
+                Map.of(middle, 1),
                 Set.of(),
-                Arrays.asList(places),
-                Map.of(placeL(x), 1)
+                Set.of(block(name)),
+                Map.of(name, 1, block(name), 1)
+        );
+    }
+
+    private static Transition<String> leave(String name) {
+        return new Transition<>(
+                Map.of(name, 1),
+                others(name),
+                Set.of(),
+                Map.of(middle, 1)
         );
     }
 }

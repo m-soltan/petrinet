@@ -7,6 +7,11 @@ public class PetriNet<T> {
     private final MutableMarking marking;
     private final TokenCondition<T> strategy;
 
+    /*
+    * parameter 'fair' is ignored
+    * it might be a good idea to pass it to the ReentrantLock constructor instead to potentially
+    * improve efficiency, but we only care about correctness - the slower version is good enough
+    */
     public PetriNet(Map<T, Integer> initial, boolean fair) {
         HashMap<Place, Integer> map = new HashMap<>();
         HashMap<Place, T> revMap = new HashMap<>();

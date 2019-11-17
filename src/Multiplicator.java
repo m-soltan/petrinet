@@ -5,24 +5,17 @@ import java.util.*;
 
 public class Multiplicator {
     private static class P implements Runnable {
-        private int i = 0;
         private final PetriNet<String> net;
         private final List<Transition<String>> list;
 
         private P(PetriNet<String> net, List<Transition<String>> list) {
             this.net = net;
             this.list = list;
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println(i);
-                }
-            }));
         }
 
         @Override
         public void run() {
-            for (;!Thread.currentThread().isInterrupted(); ++i){
+            for (int i  = 0; !Thread.currentThread().isInterrupted(); ++i){
                 try {
                      net.fire(list);
                 } catch (InterruptedException ignored) {
@@ -116,9 +109,8 @@ public class Multiplicator {
         System.out.println(net.get(d));
         System.out.println("");
 
-        // "wątek przerywa wątki pomocnicze" - this doesn't mention calling interrupt()
-        // calling interrupt() wouldn't work anyway
-        System.exit(0);
+        for (Thread i: threads)
+            i.interrupt();
     }
 
     private static Map.Entry<Integer, Integer> readInput() {

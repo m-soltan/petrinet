@@ -3,35 +3,6 @@ package petrinet;
 import java.util.*;
 
 public class Transition<T> {
-    private static class MapWriter<K, V> {
-        private final Map<K, V> map;
-
-        private MapWriter(Map<K, V> map) {
-            this.map = Map.copyOf(map);
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder ans = new StringBuilder();
-            ans.append("{");
-            boolean first = true;
-            for (K i: map.keySet()) {
-                if (first) {
-                    first = false;
-                } else {
-                    ans.append(",  ");
-                }
-                ans.append("(")
-                        .append(i.toString())
-                        .append(", ")
-                        .append(map.get(i))
-                        .append(")");
-            }
-            ans.append("}");
-            return ans.toString();
-        }
-    }
-
     final Map<Place, T> reverse;
     final Map<Place, Integer> input, output;
     final Set<Place> inhibitor, reset;

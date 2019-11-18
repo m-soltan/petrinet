@@ -37,6 +37,9 @@ public class PetriNet<T> {
         if (transitions.isEmpty()) {
             throw new IllegalArgumentException("empty argument");
         }
+        for (Transition<T> i: transitions) {
+            revMap.putAll(i.reverse);
+        }
         Transition<T> ans = strategy.resolve(transitions);
         marking.payFor(ans.input);
         marking.reset(ans.reset);
@@ -53,6 +56,9 @@ public class PetriNet<T> {
         marking.l.lock();
         HashMap<Place, T> reverse = new HashMap<>(revMap);
         q.add(new ImmutableMarking(marking.map));
+        for (Place i: marking.map.keySet()) {
+            reverse.put(i, revMap.get(i));
+        }
         marking.l.unlock();
         for (Transition<T> i: transitions)
             reverse.putAll(i.reverse);

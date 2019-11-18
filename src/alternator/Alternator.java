@@ -1,3 +1,5 @@
+package alternator;
+
 import petrinet.PetriNet;
 import petrinet.Transition;
 

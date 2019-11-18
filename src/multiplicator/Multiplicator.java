@@ -1,3 +1,5 @@
+package multiplicator;
+
 import petrinet.PetriNet;
 import petrinet.Transition;
 

@@ -47,6 +47,7 @@ public class PetriNet<T> {
         return ans;
     }
 
+    // todo: make private
     public Set<Map<T, Integer>> boundedReachable(Collection<Transition<T>> transitions, int limit) {
         ArrayDeque<ImmutableMarking> q = new ArrayDeque<>();
         HashSet<Map<T, Integer>> ans = new HashSet<>();
@@ -58,9 +59,26 @@ public class PetriNet<T> {
             reverse.putAll(i.reverse);
 
         for (int i = 0; i < limit; ++i) {
+            // todo: remove
+            if (i == 10000) {
+                int a = 0;
+            }
             if (q.isEmpty())
                 break;
-            ImmutableMarking marking = q.pollFirst();
+            ImmutableMarking marking = q.removeFirst();
+            boolean skip = false;
+            for (Map<T, Integer> j: ans) {
+                HashMap<Place, Integer> map = new HashMap<>();
+                for (T k: j.keySet()) {
+                     map.put(Place.make(k), j.get(k));
+                }
+                if (map.equals(marking.mapView)) {
+                    skip = true;
+                    break;
+                }
+            }
+            if (skip)
+                continue;
             for (Transition j: transitions)
                 if (j.isUnblocked(marking) && j.isInputReady(marking))
                     q.addLast(j.step(marking));

@@ -5,7 +5,8 @@ import java.util.*;
 
 public class Alternator {
     private static final int duration = 30;
-    private static final String middle = "prev";
+    private static final String a = "A", b = "B", c = "C", middle = "M";
+    private static final String[] names = new String[] {a, b, c};
     private static class Debug {
         static class Delayer {
             static final int a = 500;
@@ -28,11 +29,11 @@ public class Alternator {
         public void run() {
             try {
                 while (!Thread.currentThread().isInterrupted()) {
-                    if (name.equals("A")) {
+                    if (name.equals(a)) {
                         Thread.sleep(Debug.Delayer.a);
-                    } else if (name.equals("B")) {
+                    } else if (name.equals(b)) {
                         Thread.sleep(Debug.Delayer.b);
-                    } else if (name.equals("C")) {
+                    } else if (name.equals(c)) {
                         Thread.sleep(Debug.Delayer.c);
                     } else {
                         assert(false);
@@ -44,16 +45,30 @@ public class Alternator {
             } catch (InterruptedException ignored) {}
         }
     }
-    private static PetriNet<String> net = new PetriNet<>(Map.of("prev", 1), true);
+    private static PetriNet<String> net = new PetriNet<>(Map.of(middle, 1), true);
 
     public static void main(String[] args) {
-        String[] names = new String[] {"A", "B", "C"};
         final int len = names.length;
         Thread[] threads = new Thread[len];
 
-        for (int i = 0; i < len; ++i) {
-            threads[i] = new Thread(new P(names[i]));
+        ArrayList<Transition<String>> allTransitions;
+        {
+            allTransitions = new ArrayList<>();
+            for (String i: names) {
+                allTransitions.add(enter(i));
+                allTransitions.add(leave(i));
+            }
         }
+
+        Set<Map<String, Integer>> reachable = net.reachable(allTransitions);
+
+        if (!check(reachable)) {
+            System.err.println("safety check failed");
+            return;
+        }
+
+        for (int i = 0; i < len; ++i)
+            threads[i] = new Thread(new P(names[i]));
 
         for (Thread i: threads)
             i.start();
@@ -68,25 +83,29 @@ public class Alternator {
         }
     }
 
+    private static boolean check(Set<Map<String, Integer>> markings) {
+        for (Map<String, Integer> i: markings) {
+            for (String j: names) {
+                if (i.get(j) > 1)
+                    return false;
+            }
+        }
+        return true;
+    }
+
     private static Set<String> others(String name) {
-        String[] arr = new String[] {"A", "B", "C", "A", "B"};
+        // 'list' is 'names' concatenated with itself
+        ArrayList<String> list = new ArrayList<>(Arrays.asList(names));
+        list.addAll(Arrays.asList(names));
+
         int start = 0;
-        while (!arr[start].equals(name))
+        while (!list.get(start).equals(name))
             ++start;
-        return Set.of(block(arr[1 + start]), block(arr[2 + start]));
+        return Set.of(block(list.get(1 + start)), block(list.get(2 + start)));
     }
 
     private static String block(String x) {
         return "block" + x;
-    }
-
-    private static Transition<String> simple(String from, String to) {
-        return new Transition<>(
-                Map.of(from, 1),
-                Set.of(),
-                Set.of(),
-                Map.of(to, 1)
-        );
     }
 
     private static Transition<String> enter(String name) {

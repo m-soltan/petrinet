@@ -47,8 +47,7 @@ public class PetriNet<T> {
         return ans;
     }
 
-    // todo: make private
-    public Set<Map<T, Integer>> boundedReachable(Collection<Transition<T>> transitions, int limit) {
+    private Set<Map<T, Integer>> boundedReachable(Collection<Transition<T>> transitions, int limit) {
         ArrayDeque<ImmutableMarking> q = new ArrayDeque<>();
         HashSet<Map<T, Integer>> ans = new HashSet<>();
         marking.l.lock();
@@ -59,10 +58,6 @@ public class PetriNet<T> {
             reverse.putAll(i.reverse);
 
         for (int i = 0; i < limit; ++i) {
-            // todo: remove
-            if (i == 10000) {
-                int a = 0;
-            }
             if (q.isEmpty())
                 break;
             ImmutableMarking marking = q.removeFirst();
@@ -90,11 +85,6 @@ public class PetriNet<T> {
             ans.add(element);
         }
         return ans;
-    }
-
-    // todo: remove
-    public String toString() {
-        return marking.toString();
     }
 
     // uses the fair subclass regardless of boolean parameter

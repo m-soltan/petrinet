@@ -3,7 +3,7 @@ package petrinet;
 import java.util.Map;
 import java.util.Set;
 
-public class ImmutableMarking extends Marking {
+class ImmutableMarking extends Marking {
     final Map<Place, Integer> mapView;
     ImmutableMarking(Map<Place, Integer> map) {
         mapView = Map.copyOf(map);

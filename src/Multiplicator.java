@@ -107,7 +107,6 @@ public class Multiplicator {
         net.fire(t);
 
         System.out.println(net.get(d));
-        System.out.println("");
 
         for (Thread i: threads)
             i.interrupt();

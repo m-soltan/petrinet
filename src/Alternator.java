@@ -6,14 +6,8 @@ import java.util.*;
 public class Alternator {
     private static final int duration = 30;
     private static final String a = "A", b = "B", c = "C", middle = "M";
+    private static final PetriNet<String> net = new PetriNet<>(Map.of(middle, 1), true);
     private static final String[] names = new String[] {a, b, c};
-    private static class Debug {
-        static class Delayer {
-            static final int a = 500;
-            static final int b = 250;
-            static final int c = 100;
-        }
-    }
     private static class P implements Runnable {
         private final Collection<Transition<String>> enter, leave;
         private final String name;
@@ -29,15 +23,6 @@ public class Alternator {
         public void run() {
             try {
                 while (!Thread.currentThread().isInterrupted()) {
-                    if (name.equals(a)) {
-                        Thread.sleep(Debug.Delayer.a);
-                    } else if (name.equals(b)) {
-                        Thread.sleep(Debug.Delayer.b);
-                    } else if (name.equals(c)) {
-                        Thread.sleep(Debug.Delayer.c);
-                    } else {
-                        assert(false);
-                    }
                     net.fire(enter);
                     System.out.println(name);
                     net.fire(leave);
@@ -45,7 +30,6 @@ public class Alternator {
             } catch (InterruptedException ignored) {}
         }
     }
-    private static PetriNet<String> net = new PetriNet<>(Map.of(middle, 1), true);
 
     public static void main(String[] args) {
         final int len = names.length;

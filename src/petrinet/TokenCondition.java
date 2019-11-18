@@ -3,7 +3,7 @@ package petrinet;
 import java.util.Collection;
 import java.util.Map;
 
-public abstract class TokenCondition<T> {
+abstract class TokenCondition<T> {
     final MutableMarking marking;
 
     TokenCondition(MutableMarking marking) {
@@ -11,5 +11,5 @@ public abstract class TokenCondition<T> {
     }
 
     abstract Transition<T> resolve(Collection<Transition<T>> transitions) throws InterruptedException;
-    abstract void retry(Map<Place, Integer> map) throws InterruptedException;
+    abstract void retry(Map<Place, Integer> map);
 }

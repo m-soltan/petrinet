@@ -14,7 +14,7 @@ class FairCondition<T> extends TokenCondition<T> {
     Transition<T> resolve(Collection<Transition<T>> transitions) throws InterruptedException {
         marking.l.lockInterruptibly();
         try {
-            for (; ; ) {
+            for (;;) {
                 Optional<Transition<T>> ansOpt = chooseTransition(transitions);
                 if (ansOpt.isPresent())
                     return ansOpt.get();

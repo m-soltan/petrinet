@@ -32,17 +32,6 @@ public class Transition<T> {
         }
     }
 
-    private class Wrap {
-        final Collection<T> value;
-
-        Collection<T> getValue() {
-            return value;
-        }
-
-        Wrap(Collection<T> value) {
-            this.value = value;
-        }
-    }
     final Map<Place, T> reverse;
     final Map<Place, Integer> input, output;
     final Set<Place> inhibitor, reset;
@@ -58,13 +47,6 @@ public class Transition<T> {
         addReverse(temp, inhibitor);
         addReverse(temp, output.keySet());
         reverse = Map.copyOf(temp);
-    }
-
-    @Override
-    public String toString() {
-        return "Transition" +
-                "\ninput: " + new MapWriter<>(input) +
-                "\noutput: " + new MapWriter<>(output);
     }
 
     boolean isUnblocked(Marking marking) {
